@@ -31,7 +31,7 @@ public class ImageGenerator
             Bitmap image = CreateSerialNumberImages(serialNumber, i);
             string fileName = $"{serialNumber}_{DateTime.Now:yyyyMMdd_HHmmss}_{i:000}.png";
             string filePath = Path.Combine(imagesFolder, fileName);
-            
+
             image.Save(filePath, ImageFormat.Png);
             image.Dispose();
         }
@@ -53,9 +53,10 @@ public class ImageGenerator
                 AddNoise(graphics, width, height);
             }
         }
+
         return bitmap;
     }
-    
+
     private void ApplyBackground(Graphics graphics, int width, int height)
     {
         Color[] backgroundColors = { Color.White, Color.LightGray, Color.WhiteSmoke, Color.AliceBlue, };
@@ -65,17 +66,17 @@ public class ImageGenerator
     private void DrawSerialNumber(Graphics graphics, string serialNumber, int width, int height)
     {
         string[] fontNames = { "Arial", "Times New Roman" };
-        float[] fontSize = 18 + random.Next(-4, 8);
+        float fontSize = 18 + random.Next(-4, 8);
         FontStyle fontStyle = random.Next(3) == 0 ? FontStyle.Bold : FontStyle.Regular;
 
-        using (Font font = new Font(fontNames[random.Next(fontNames.Length)], fontSize, style))
+        using (Font font = new Font(fontNames[random.Next(fontNames.Length)], fontSize, fontStyle))
         {
-            Color[] textColors = { Color.Black, Color.DarkBlue, Color.DarkGreen, Color.DarkRed};
+            Color[] textColors = { Color.Black, Color.DarkBlue, Color.DarkGreen, Color.DarkRed };
             using (Brush brush = new SolidBrush(textColors[random.Next(textColors.Length)]))
             {
                 float x = 10 + random.Next(20);
                 float y = height / 2 - fontSize / 2 + random.Next(-10, 10);
-                
+
                 graphics.DrawString(serialNumber, font, brush, x, y);
             }
         }
@@ -87,9 +88,11 @@ public class ImageGenerator
         {
             for (int i = 0; i < 20; i++)
             {
-                graphics.DrawLine(pen, random.Next(width), random.Next(height), random.Next( width), random.Next(height));
+                graphics.DrawLine(pen, random.Next(width), random.Next(height), random.Next(width),
+                    random.Next(height));
             }
         }
 
-    public string GetImagesFolder() => imagesFolder;
+        string GetImagesFolder() => imagesFolder;
+    }
 }

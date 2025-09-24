@@ -5,64 +5,115 @@ using System.Linq;
 using Tesseract;
 using SerialNumberOCR.Models;
 
-namespace SerialNumberOCR.Services;
-
-public class OCRProcessor: IDisposable
+namespace SerialNumberOCR.Services
 {
-    private TesseractEngine tesseractEngine;
-    private bool disposed = false;
-
-    public OCRProcessor(string tessDataPath = @"./tessdata", string language = "eng")
+    public class OCRProcessor : IDisposable
     {
-        InitializeTesseract(tessDataPath, language);
-    }
+        private TesseractEngine tesseractEngine;
+        private bool disposed = false;
 
-    private void InitializeTesseract(string tessDataPath, string language)
-    {
-        try
+        public OCRProcessor(string tessDataPath = @"./tessdata", string language = "eng")
         {
-            tesseractEngine = new TesseractEngine(tessDataPath, language, EngineMode.Default);
-            tesseractEngine.SetVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-");
+            InitializeTesseract(tessDataPath, language);
         }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("Could not initialize tesseract engine", ex);
-        }
-    }
 
-    public SerialNumberData ProcessImage(string imagePath)
-    {
-        if (tesseractEngine == null)
-            throw new InvalidOperationException("No tesseract engine is initialized");
-
-        try
+        private void InitializeTesseract(string tessDataPath, string language)
         {
-            using (var image = Pix.LoadFromFile(imagePath)
+            try
             {
-                using (var page = tesseractEngine.Process(image))
-                {
-                    string text = page.GetText().Trim();
-                    float confidence = page.GetMeanConfidence();
-                    return new SerialNumberData()
-                    {
-                        SerialNumber = text,
-                        ImagePath = imagePath,
-                        CreatedAt = DateTime.Now,
-                        Confidence = confidence,
-                        BoundingBox = new BoundingBox
-                        {
-                            X = 0,
-                            Y = 0,
-                            Width = image.Width,
-                            Height = image.Height
-                        }
-                    };
-                }
+                tesseractEngine = new TesseractEngine(tessDataPath, language, EngineMode.Default);
+                tesseractEngine.SetVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Could not initialize tesseract engine", ex);
             }
         }
-        catch (Exception ex)
+
+        public SerialNumberData ProcessImage(string imagePath)
         {
-            throw new InvalidOperationException($"Could not process image, {imagePath}: {ex.Message}", ex);
+            if (tesseractEngine == null)
+                throw new InvalidOperationException("No tesseract engine is initialized");
+
+            try
+            {
+                using (var image = Pix.LoadFromFile(imagePath)
+                {
+                    using (var page = tesseractEngine.Process(image))
+                    {
+                        string text = page.GetText().Trim();
+                        float confidence = page.GetMeanConfidence();
+                        return new SerialNumberData()
+                        {
+                            SerialNumber = text,
+                            ImagePath = imagePath,
+                            CreatedAt = DateTime.Now,
+                            Confidence = confidence,
+                            BoundingBox = new BoundingBox
+                            {
+                                X = 0,
+                                Y = 0,
+                                Width = image.Width,
+                                Height = image.Height
+                            }
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Could not process image, {imagePath}: {ex.Message}", ex);
+            }
+        }
+
+        public List<SerialNumberData> AllImages(string imageFolder, Dataset existingDataset = null,
+            double minimumConfidence = 0.5)
+        {
+            var result = new List<SerialNumberData>();
+            string[] files = Directory.GetFiles(imageFolder, "*.png");
+
+            var processedPath = existingDataset?.SerialNumbers?.Select(s => s.ImagePath).ToHashSet() ??
+                                new HashSet<string>();
+
+            foreach (var imagePath in imageFiles)
+            {
+                if (processedPath.Contains(imagePath))
+                    continue;
+                try
+                {
+                    var result = ProcessImage(imagePath);
+
+                    if (!string.IsNullOrEmpty(result.SerialNumber) && resultConfidence >= minimumConfidence)
+                    {
+                        result.Add(result);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing {imagePath}: {ex.Message}");
+                }
+            }
+
+            return result;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    tesseractEngine?.Dispose();
+                }
+
+                disposed = true;
+            }
         }
     }
 }
