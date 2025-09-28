@@ -66,7 +66,7 @@ namespace SerialNumberOCR.Services
             }
         }
 
-        public List<SerialNumberData> AllImages(string imageFolder, Dataset existingDataset = null,
+        public List<SerialNumberData> ProcessAllImages(string imageFolder, Dataset existingDataset = null,
             double minimumConfidence = 0.5)
         {
             var result = new List<SerialNumberData>();
@@ -75,7 +75,7 @@ namespace SerialNumberOCR.Services
             var processedPath = existingDataset?.SerialNumbers?.Select(s => s.ImagePath).ToHashSet() ??
                                 new HashSet<string>();
 
-            foreach (var imagePath in imageFiles)
+            foreach (var imagePath in imageFolder)
             {
                 if (processedPath.Contains(imagePath))
                     continue;

@@ -93,6 +93,6 @@ public class ImageGenerator
             }
         }
 
-        string GetImagesFolder() => imagesFolder;
+        string GetImagesFolder() => imagesFolder; //Must be public because it will mentioned in MainForm.cs 
     }
 }
