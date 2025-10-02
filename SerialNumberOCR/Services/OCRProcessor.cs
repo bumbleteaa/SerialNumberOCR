@@ -12,8 +12,12 @@ namespace SerialNumberOCR.Services
         private TesseractEngine tesseractEngine;
         private bool disposed = false;
 
-        public OCRProcessor(string tessDataPath = @"./tessdata", string language = "eng")
+        public OCRProcessor(string tessDataPath = "tessdata", string language = "eng")
         {
+            if (tessDataPath == null)
+            {
+                tessDataPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "tessdata");
+            }
             InitializeTesseract(tessDataPath, language);
         }
 
@@ -21,6 +25,10 @@ namespace SerialNumberOCR.Services
         {
             try
             {
+                string fullPath = Path.GetFullPath(tessDataPath);
+                Console.WriteLine($"Looking for tessdata at: {fullPath}");
+                Console.WriteLine($"Directory exists: {Directory.Exists(fullPath)}");
+                
                 tesseractEngine = new TesseractEngine(tessDataPath, language, EngineMode.Default);
                 tesseractEngine.SetVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-");
             }
@@ -37,7 +45,7 @@ namespace SerialNumberOCR.Services
 
             try
             {
-                using (var image = Pix.LoadFromFile(imagePath)
+                using (var image = Pix.LoadFromFile(imagePath))
                 {
                     using (var page = tesseractEngine.Process(image))
                     {
@@ -69,13 +77,13 @@ namespace SerialNumberOCR.Services
         public List<SerialNumberData> ProcessAllImages(string imageFolder, Dataset existingDataset = null,
             double minimumConfidence = 0.5)
         {
-            var result = new List<SerialNumberData>();
+            var processedImage = new List<SerialNumberData>();
             string[] files = Directory.GetFiles(imageFolder, "*.png");
 
             var processedPath = existingDataset?.SerialNumbers?.Select(s => s.ImagePath).ToHashSet() ??
                                 new HashSet<string>();
 
-            foreach (var imagePath in imageFolder)
+            foreach (var imagePath in files)
             {
                 if (processedPath.Contains(imagePath))
                     continue;
@@ -83,9 +91,9 @@ namespace SerialNumberOCR.Services
                 {
                     var result = ProcessImage(imagePath);
 
-                    if (!string.IsNullOrEmpty(result.SerialNumber) && resultConfidence >= minimumConfidence)
+                    if (!string.IsNullOrEmpty(result.SerialNumber) && result.Confidence >= minimumConfidence)
                     {
-                        result.Add(result);
+                        processedImage.Add(result);
                     }
                 }
                 catch (Exception ex)
@@ -94,7 +102,7 @@ namespace SerialNumberOCR.Services
                 }
             }
 
-            return result;
+            return processedImage;
         }
 
         public void Dispose()

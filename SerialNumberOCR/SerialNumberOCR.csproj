@@ -7,12 +7,9 @@
         <UseWindowsForms>true</UseWindowsForms>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
-
+    
     <ItemGroup>
-      <Folder Include="tessdata\" />
-    </ItemGroup>
 
-    <ItemGroup>
       <None Update="tessdata\eng.traineddata">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>

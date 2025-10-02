@@ -92,7 +92,6 @@ public class ImageGenerator
                     random.Next(height));
             }
         }
-
-        string GetImagesFolder() => imagesFolder; //Must be public because it will mentioned in MainForm.cs 
     }
+   public string GetImagesFolder() => imagesFolder; //Must be public because it will mentioned in MainForm.cs
 }

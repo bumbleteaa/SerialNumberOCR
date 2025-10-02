@@ -1,10 +1,17 @@
+using System.Windows.Forms;
+using SerialNumberOCR.Forms;
+
 namespace SerialNumberOCR;
 
-static class Program
+public class Program
 {
     [STAThread]
-    static void Main()
+    public static void Main()
     {
-       
+       Application.EnableVisualStyles();
+       Application.SetCompatibleTextRenderingDefault(false);
+       Application.Run(new MainForm());
     }
+    
+    
 }
